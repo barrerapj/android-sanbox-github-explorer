@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ComposePlayground</string>
+    <string name="text_loader_title">Loading …</string>
+    <string name="text_loader_content">Please wait.</string>
+    <string name="hint_input_search">Search</string>
+    <string name="text_error_search">Error getting items.</string>
+    <string name="text_info_empty_search_result">No items to show.</string>
+</resources>
