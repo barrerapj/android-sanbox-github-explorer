@@ -10,7 +10,6 @@ interface GithubApi {
     @GET(Endpoints.SEARCH)
     suspend fun search(
         @Header("Accept") format: String = "application/vnd.github+json",
-        @Header("Authorization") auth: String,
         @QueryMap options: Map<String, String>
     ): GithubSearchResponse
 }

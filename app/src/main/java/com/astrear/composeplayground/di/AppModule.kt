@@ -17,6 +17,7 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.util.concurrent.TimeUnit
 
 val appModule = module {
@@ -48,9 +49,8 @@ private fun provideRetrofit(client: OkHttpClient): Retrofit {
         .build()
 
     return Retrofit.Builder()
-        .addConverterFactory(
-            MoshiConverterFactory.create(moshi)
-        )
+        .addConverterFactory(ScalarsConverterFactory.create())
+        .addConverterFactory(MoshiConverterFactory.create(moshi))
         .baseUrl(Endpoints.BASE_URL)
         .client(client)
         .build()

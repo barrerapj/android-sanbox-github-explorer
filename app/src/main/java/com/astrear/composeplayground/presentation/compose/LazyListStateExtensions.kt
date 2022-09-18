@@ -3,6 +3,11 @@ package com.astrear.composeplayground.presentation.compose
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.*
 
+/**
+ * Extension to load more items on lazy column bottom reached
+ * @receiver LazyListState
+ * @param loadMore Function0<Unit>
+ */
 @Composable
 fun LazyListState.OnBottomReached(
     loadMore: () -> Unit

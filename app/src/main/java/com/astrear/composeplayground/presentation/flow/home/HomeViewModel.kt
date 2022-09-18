@@ -8,7 +8,9 @@ import com.astrear.composeplayground.domain.models.GithubPage
 import com.astrear.composeplayground.domain.models.GithubRepository
 import com.astrear.composeplayground.domain.usecases.SearchRepositoriesUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.joda.time.LocalDate
 import timber.log.Timber
@@ -22,11 +24,17 @@ class HomeViewModel(
     private val _viewState = MutableSharedFlow<HomeViewState>(replay = 0)
     override val viewState: SharedFlow<HomeViewState> = _viewState
 
+    private val _repositories = MutableStateFlow<List<GithubRepository>>(listOf())
+    override val repositories: StateFlow<List<GithubRepository>> = _repositories
+
     private var githubCurrentPage: GithubPage? = null
     private var pageLimit: Int = INITIAL_PAGE_LIMIT
     private var nexPageIndex: Int = INITIAL_PAGE_INDEX
     private var searchQuery = ""
 
+    init {
+        getRepositories(searchQuery)
+    }
 
     override fun getRepositories(query: String) {
         viewModelScope.launch {
@@ -46,6 +54,11 @@ class HomeViewModel(
                         nexPageIndex++
                         setPageLimit(result.data.total)
                         githubCurrentPage = result.data
+                        val updatedList = mutableListOf<GithubRepository>().apply {
+                            addAll(repositories.value)
+                            addAll(result.data.items)
+                        }
+                        _repositories.emit(updatedList)
                         _viewState.emit(HomeViewState.HasNewItems(result.data.items))
                     }
                     is Outcome.Error -> {
@@ -90,9 +103,9 @@ class HomeViewModel(
 
     private suspend fun resetPageOptions(query: String) {
         if (query != searchQuery) {
+            _repositories.emit(listOf())
             pageLimit = INITIAL_PAGE_LIMIT
             nexPageIndex = INITIAL_PAGE_INDEX
-            _viewState.emit(HomeViewState.HasChangesInQuery)
         }
     }
 
@@ -101,7 +114,6 @@ class HomeViewModel(
         class HasNewItems(val items: List<GithubRepository>) : HomeViewState()
         object HasGetRepositoriesError : HomeViewState()
         object DontHaveNewItems : HomeViewState()
-        object HasChangesInQuery : HomeViewState()
     }
 
     companion object {

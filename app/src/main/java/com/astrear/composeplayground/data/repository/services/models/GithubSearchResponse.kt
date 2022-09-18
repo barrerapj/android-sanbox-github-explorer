@@ -25,6 +25,9 @@ data class GithubSearchResponseItem(
     val stars: Long,
     @Json(name = "default_branch")
     val defaultBranch: String,
+    @Json(name = "topics")
+    val tags: List<String>?,
+    val size: Long,
     @Json(name = "created_at")
     val createdAt: String,
     @Json(name = "updated_at")

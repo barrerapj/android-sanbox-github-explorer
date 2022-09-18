@@ -1,6 +1,7 @@
 package com.astrear.composeplayground.domain.models
 
-import java.util.*
+import com.squareup.moshi.JsonClass
+import java.io.Serializable
 
 data class GithubPage(
     val total: Int,
@@ -8,7 +9,9 @@ data class GithubPage(
     val items: List<GithubRepository>
 )
 
+@JsonClass(generateAdapter = true)
 data class GithubRepository(
+    val id: Long,
     val ownerName: String,
     val ownerProfilePictureUrl: String,
     val name: String,
@@ -16,6 +19,11 @@ data class GithubRepository(
     val language: String,
     val visibility: String,
     val stars: Long,
-    val createdAt: Date,
-    val updatedAt: Date
-)
+    val branch: String,
+    val size: Long,
+    val tags: List<String>
+) : Serializable {
+    companion object {
+        const val serialVersionUID = 1L
+    }
+}

@@ -23,17 +23,17 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.astrear.composeplayground.R
 import com.astrear.composeplayground.domain.models.GithubRepository
+import com.astrear.composeplayground.presentation.compose.contants.PreviewConstants
 import com.astrear.composeplayground.ui.theme.ComposePlaygroundTheme
 import com.astrear.composeplayground.ui.theme.CustomTypography
 import com.astrear.composeplayground.ui.theme.Typography
-import java.util.*
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GithubRepositoryItem(data: GithubRepository) {
+fun GithubRepositoryItem(modifier: Modifier = Modifier, data: GithubRepository) {
     Card(
-        modifier = Modifier
+        modifier = modifier
             .padding(4.dp)
             .fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -135,17 +135,7 @@ fun GithubRepositoryItem(data: GithubRepository) {
 fun RepositoryItemPreview() {
     ComposePlaygroundTheme(dynamicColor = false) {
         GithubRepositoryItem(
-            data = GithubRepository(
-                "Large user name",
-                "https://i.pravatar.cc/300",
-                "Too much large, really large, super super super large sample title",
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur nec arcu auctor, egestas nisi non, congue urna. Nam eget lorem sed enim molestie ornare ac nec ante",
-                "C",
-                "public",
-                100,
-                Date(),
-                Date()
-            )
+            data = PreviewConstants.Repository
         )
     }
 }

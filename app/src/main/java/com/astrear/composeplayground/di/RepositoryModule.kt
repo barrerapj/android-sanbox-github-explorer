@@ -2,6 +2,8 @@ package com.astrear.composeplayground.di
 
 import com.astrear.composeplayground.data.repository.firebase.auth.GithubAuthenticationFirebaseRepository
 import com.astrear.composeplayground.data.repository.firebase.auth.GithubAuthenticationFirebaseRepositoryImpl
+import com.astrear.composeplayground.data.repository.services.GithubRawRepository
+import com.astrear.composeplayground.data.repository.services.GithubRawRepositoryImpl
 import com.astrear.composeplayground.data.repository.services.GithubSearchRepository
 import com.astrear.composeplayground.data.repository.services.GithubSearchRepositoryImpl
 import com.astrear.composeplayground.data.repository.storage.contants.PreferencesIds
@@ -24,5 +26,8 @@ val repositoryModule = module {
     }
     single<GithubSearchRepository> {
         GithubSearchRepositoryImpl(get(), get())
+    }
+    single<GithubRawRepository> {
+        GithubRawRepositoryImpl(get(), get())
     }
 }

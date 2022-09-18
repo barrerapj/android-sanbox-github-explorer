@@ -1,24 +1,18 @@
 package com.astrear.composeplayground.data.repository.services
 
 import com.astrear.composeplayground.data.models.Outcome
-import com.astrear.composeplayground.data.repository.services.models.GithubSearchResponse
 import com.astrear.composeplayground.data.utils.CoroutineDispatcherProvider
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-class GithubSearchRepositoryImpl(
+class GithubRawRepositoryImpl(
     private val provider: CoroutineDispatcherProvider,
-    private val api: GithubApi
-) : GithubSearchRepository {
-    override suspend fun search(
-        options: Map<String, String>
-    ): Outcome<GithubSearchResponse> {
+    private val api: GithubRawApi
+) : GithubRawRepository {
+    override suspend fun getReadme(url: String): Outcome<String> {
         return withContext(provider.ioDispatcher()) {
             try {
-                val result = api.search(
-                    options = options
-                )
-
+                val result = api.getReadme(url)
                 Outcome.Success(result)
             } catch (error: Exception) {
                 Timber.e(error)

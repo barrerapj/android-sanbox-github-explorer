@@ -42,6 +42,12 @@ object CustomTypography {
         letterSpacing = 0.5.sp
     )
 
+    val Micro = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontSize = 9.sp,
+        letterSpacing = 0.5.sp
+    )
+
     val MicroBold = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Bold,

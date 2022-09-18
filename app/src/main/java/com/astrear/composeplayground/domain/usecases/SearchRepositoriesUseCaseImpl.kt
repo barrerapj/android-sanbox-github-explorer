@@ -15,7 +15,7 @@ class SearchRepositoriesUseCaseImpl(
     override suspend fun getRepositories(
         options: Map<String, String>
     ): Outcome<GithubPage> {
-        val result = githubSearchRepository.search(secretsRepository.sessionToken, options)
+        val result = githubSearchRepository.search(options)
 
         return when (result) {
             is Outcome.Success -> {

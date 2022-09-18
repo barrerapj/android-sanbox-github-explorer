@@ -77,10 +77,11 @@ fun Loader(modifier: Modifier = Modifier, dialogState: MutableState<Boolean>) {
 @Preview(showBackground = true)
 @Composable
 fun LoaderPreview() {
+    val previewDialogState = remember {
+        mutableStateOf(true)
+    }
+
     ComposePlaygroundTheme(dynamicColor = false) {
-        val dialogState = remember {
-            mutableStateOf(true)
-        }
-        Loader(dialogState = dialogState)
+        Loader(dialogState = previewDialogState)
     }
 }

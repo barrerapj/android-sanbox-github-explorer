@@ -6,16 +6,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -24,42 +22,47 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.astrear.composeplayground.R
 import com.astrear.composeplayground.domain.models.GithubRepository
+import com.astrear.composeplayground.presentation.compose.contants.PreviewConstants
 import com.astrear.composeplayground.presentation.flow.home.HomeContract
 import com.astrear.composeplayground.presentation.flow.home.HomeViewModel
 import com.astrear.composeplayground.presentation.flow.home.HomeViewModel.HomeViewState
 import com.astrear.composeplayground.presentation.utils.toast
 import com.astrear.composeplayground.ui.theme.ComposePlaygroundTheme
 import com.astrear.composeplayground.ui.theme.PurpleGrey80
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.*
 import org.koin.androidx.compose.koinViewModel
-import java.util.*
+import timber.log.Timber
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    modifier: Modifier = Modifier,
     initialItems: List<GithubRepository> = listOf(),
-    contract: HomeContract<HomeViewState> = koinViewModel<HomeViewModel>()
+    contract: HomeContract<HomeViewState> = koinViewModel<HomeViewModel>(),
+    onDetailsNavigation: (repository: GithubRepository) -> Unit
 ) {
-    val context = LocalContext.current
-    val dialogState = remember { mutableStateOf(false) }
-    val searchQuery = remember { mutableStateOf("") }
-    val items = remember { mutableStateListOf<GithubRepository>() }
 
-    // Load initial data into list for preview preview only
-    items.addAll(initialItems)
+    val context = LocalContext.current
+    val loaderState = remember { mutableStateOf(false) }
 
     LocalLifecycleOwner.current.lifecycleScope.launchWhenCreated {
         contract.viewState.collectLatest {
-            handleHomeViewState(context, it, dialogState, items)
+            handleHomeViewState(context, it, loaderState)
         }
     }
 
-    LaunchedEffect(false) {
-        contract.getRepositories(searchQuery.value)
+    val searchQuery = remember { mutableStateOf("") }
+    // FIXME: use preview mock data without using logic
+    val repositoryList: State<List<GithubRepository>> = if (LocalInspectionMode.current) {
+        remember { mutableStateOf(initialItems) }
+    } else {
+        contract.repositories.collectAsState()
     }
+    var selectedId by remember { mutableStateOf(-1L) }
+    val scrollState = rememberLazyListState()
 
-    Loader(dialogState = dialogState)
+
+    Loader(dialogState = loaderState)
 
     Column(
         modifier = Modifier
@@ -100,24 +103,29 @@ fun HomeScreen(
             }
         }
 
-        val listState = rememberLazyListState()
-
         LazyColumn(
             contentPadding = PaddingValues(vertical = 10.dp),
-            state = listState
+            state = scrollState
         ) {
-
             items(
-                items = items,
-                itemContent = {
-                    GithubRepositoryItem(data = it)
-                }
+                items = repositoryList.value,
+                itemContent = { repository ->
+                    GithubRepositoryItem(
+                        modifier = Modifier.selectable(
+                            selected = repository.id == selectedId,
+                            onClick = {
+                                selectedId = repository.id
+                                onDetailsNavigation(repository)
+                            }
+                        ), data = repository
+                    )
+                },
             )
         }
 
         // call the extension function
-        listState.OnBottomReached {
-            if (items.isNotEmpty()) {
+        scrollState.OnBottomReached {
+            if (repositoryList.value.isNotEmpty()) {
                 contract.getRepositories()
             }
         }
@@ -127,8 +135,7 @@ fun HomeScreen(
 private fun handleHomeViewState(
     context: Context,
     state: HomeViewState,
-    dialogState: MutableState<Boolean>,
-    items: SnapshotStateList<GithubRepository>
+    dialogState: MutableState<Boolean>
 ) {
     when (state) {
         HomeViewState.HasGetRepositoriesError -> {
@@ -140,14 +147,10 @@ private fun handleHomeViewState(
         }
         is HomeViewState.HasNewItems -> {
             dialogState.value = false
-            items.addAll(state.items)
         }
         is HomeViewState.DontHaveNewItems -> {
             dialogState.value = false
             toast(context, R.string.text_info_empty_search_result)
-        }
-        is HomeViewState.HasChangesInQuery -> {
-            items.clear()
         }
     }
 }
@@ -155,29 +158,30 @@ private fun handleHomeViewState(
 @Preview(showBackground = true)
 @Composable
 fun HomePreview() {
+    val previewMockItems = List(4) {
+        PreviewConstants.Repository
+    }
+
+    val previewContract = object : HomeContract<HomeViewState> {
+        override val viewState: SharedFlow<HomeViewState> =
+            MutableSharedFlow<HomeViewState>(replay = 0)
+
+        override val repositories: StateFlow<List<GithubRepository>> =
+            MutableStateFlow(previewMockItems)
+
+        override fun getRepositories(query: String) {
+            // Nothing
+        }
+    }
+
     ComposePlaygroundTheme(dynamicColor = false) {
         HomeScreen(
-            List(4) {
-                GithubRepository(
-                    "Owner",
-                    "https://pic.com",
-                    "Title",
-                    "Content",
-                    "C",
-                    "public",
-                    100,
-                    Date(),
-                    Date()
-                )
+            initialItems = previewMockItems,
+            contract = previewContract,
+            onDetailsNavigation = {
+                Timber.i("Repository selected: $it")
             },
-            object : HomeContract<HomeViewState> {
-                override val viewState: SharedFlow<HomeViewState> =
-                    MutableSharedFlow<HomeViewState>(replay = 0)
-
-                override fun getRepositories(query: String) {
-                    // Nothing
-                }
-            })
+        )
     }
 }
 

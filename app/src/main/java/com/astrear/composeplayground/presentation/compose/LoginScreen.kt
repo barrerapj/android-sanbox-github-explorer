@@ -1,7 +1,6 @@
 package com.astrear.composeplayground.presentation.compose
 
 import android.app.Activity
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -24,6 +24,7 @@ import com.astrear.composeplayground.R
 import com.astrear.composeplayground.presentation.flow.login.LoginContract
 import com.astrear.composeplayground.presentation.flow.login.LoginViewModel
 import com.astrear.composeplayground.presentation.flow.login.LoginViewModel.LoginViewState
+import com.astrear.composeplayground.presentation.utils.toast
 import com.astrear.composeplayground.ui.theme.ComposePlaygroundTheme
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -32,6 +33,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun LoginScreen(
+    modifier: Modifier = Modifier,
     contract: LoginContract<LoginViewState> = koinViewModel<LoginViewModel>(),
     onNavigateToHome: () -> Unit
 ) {
@@ -47,7 +49,7 @@ fun LoginScreen(
             .collectLatest {
                 when (it) {
                     LoginViewState.HasError -> {
-                        Toast.makeText(context, "Error", Toast.LENGTH_SHORT).show()
+                        toast(context, R.string.text_error_login)
                     }
                     is LoginViewState.HasValidSession -> {
                         onNavigateToHome()
@@ -114,12 +116,12 @@ fun LoginScreen(
                             painter = image,
                             modifier = Modifier
                                 .size(18.dp),
-                            contentDescription = "drawable_icons"
+                            contentDescription = null
                         )
                     }
                     Text(
                         modifier = Modifier.align(Alignment.Center),
-                        text = "Login with github",
+                        text = stringResource(id = R.string.label_button_login_github),
                     )
                 }
             }
@@ -130,15 +132,14 @@ fun LoginScreen(
 @Preview(showBackground = true)
 @Composable
 fun LoginPreview() {
-    ComposePlaygroundTheme {
-        LoginScreen(object : LoginContract<LoginViewState> {
-            override val viewState: SharedFlow<LoginViewState> = MutableSharedFlow()
+    val previewContract = object : LoginContract<LoginViewState> {
+        override val viewState: SharedFlow<LoginViewState> = MutableSharedFlow()
 
-            override fun authenticate(activity: Activity?) {
-                // Nothing
-            }
-        }) {
-
+        override fun authenticate(activity: Activity?) {
+            // Nothing
         }
+    }
+    ComposePlaygroundTheme {
+        LoginScreen(contract = previewContract) {}
     }
 }

@@ -2,7 +2,14 @@
     <string name="app_name">ComposePlayground</string>
     <string name="text_loader_title">Loading …</string>
     <string name="text_loader_content">Please wait.</string>
+
+    <string name="label_button_login_github">Login with github</string>
+    <string name="text_error_login">Error in login, try again.</string>
+
     <string name="hint_input_search">Search</string>
     <string name="text_error_search">Error getting items.</string>
     <string name="text_info_empty_search_result">No items to show.</string>
+
+    <string name="formatter_branch_name">Branch: %s</string>
+    <string name="formatter_size">Size: %dMB</string>
 </resources>
